@@ -8,10 +8,12 @@ from slackclient import SlackClient
 import json
 import schedule
 import config
+from datetime import datetime
+from datetime import timedelta
 
 ANSWERHUB_USER = config.ANSWERHUB_USER
 ANSWERHUB_PASS = config.ANSWERHUB_PASS
-url = "https://community.clover.com/services/v2/question.json?unanswered=true&pageSize=10&sort=newest"
+url = "https://community.clover.com/services/v2/question.json?unanswered=true&pageSize=100&sort=newest&includeOnly=id,slug,title,lastActiveDate"
 base_url =  config.BASE_URL
 
 slack_client = SlackClient(config.SLACK_BOT_TOKEN)
@@ -61,10 +63,7 @@ def handle_command(command, channel):
         response = "Sure...write some more code then I can do that!"
 
     if command.startswith("newest"):
-        web_response = json.loads(requests.get(url, auth=(ANSWERHUB_USER, ANSWERHUB_PASS)).text)
-        response = "Question List: "
-        for question in web_response["list"]:
-            response += ("\n   • <" + base_url + str(question["id"]) + "/" + question["slug"] + ".html|" + question["title"] + ">")
+        response = daily_digest()
 
     # Sends the response back to the channel
     slack_client.api_call(
@@ -81,20 +80,37 @@ def check_for_command():
 
 
 def daily_digest():
-    default_response = "No questions to report"
-    response = None
-
     web_response = json.loads(requests.get(url, auth=(ANSWERHUB_USER, ANSWERHUB_PASS)).text)
     response = "Daily Question List: "
-    for question in web_response["list"]:
-        response += ("\n   • <" + base_url + str(question["id"]) + "/" + question["slug"] + ".html|" + question["title"] + ">")
+    top_questions = top_ten_questions(web_response["list"])
+    for question in top_questions:
+        response += ("\n   • *[" + time_label(datetime.fromtimestamp(question["lastActiveDate"]/1e3)) + "]* <" + base_url + str(question["id"]) + "/" + question["slug"] + ".html|" + question["title"] + ">")
 
-    # Sends the response to the channel
-    slack_client.api_call(
-        "chat.postMessage",
-        channel="", # channel dedicated to these updates
-        text=response or default_response
-    )
+    return response
+
+def top_ten_questions(question_list):
+    sorted_web_response = sorted(question_list, key=lambda x_y: x_y["lastActiveDate"])
+
+    chosen_ones = []
+    for question in sorted_web_response:
+        if all([older_than_two_days(question), younger_than_one_month(question)]):
+            chosen_ones.append(question)
+            if len(chosen_ones) == 10:
+                break
+    return chosen_ones
+
+def time_label(question_time):
+    age = datetime.now() - question_time
+    return (str(age.days) + " days ago")
+
+### Requirements for top questions
+
+def older_than_two_days(question):
+    return (datetime.fromtimestamp(question["lastActiveDate"]/1e3)) <= (datetime.now() - timedelta(days=2))
+
+def younger_than_one_month(question):
+    return (datetime.fromtimestamp(question["lastActiveDate"]/1e3)) >= (datetime.now() - timedelta(days=30))
+
 
 
 if __name__ == "__main__":
@@ -108,6 +124,5 @@ if __name__ == "__main__":
         schedule.every().day.at("8:30").do(daily_digest)
         while True:
             schedule.run_pending()
-            # time.sleep(RTM_READ_DELAY)
     else:
         print("Connection failed. Exception traceback printed above.")

@@ -84,7 +84,7 @@ def daily_digest():
     response = "Daily Question List: "
     top_questions = top_ten_questions(web_response["list"])
     for question in top_questions:
-        response += ("\n   • *[" + time_label(datetime.fromtimestamp(question["lastActiveDate"]/1e3)) + "]* <" + base_url + str(question["id"]) + "/" + question["slug"] + ".html|" + question["title"] + ">")
+        response += ("\n   - *[" + time_label(datetime.fromtimestamp(question["lastActiveDate"]/1e3)) + "]* <" + base_url + str(question["id"]) + "/" + question["slug"] + ".html|" + question["title"] + ">")
 
     return response
 

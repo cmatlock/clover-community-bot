@@ -1,17 +1,19 @@
 # pylint: disable=missing-docstring
 
-# import sys
-# sys.path.append("lib")
+import sys
+sys.path.append("lib")
 
 import json
 from datetime import datetime
 from datetime import timedelta
 
 import requests
-import webapp2 # webob, paste
+from requests_toolbelt.adapters import appengine
 
+import webapp2
 import config
 
+appengine.monkeypatch()
 AUTH = {'user': config.ANSWERHUB_USER, 'password': config.ANSWERHUB_PASS}
 URL = (
     "https://community.clover.com/services/v2/question.json?unanswered=true&pageSize=100"
@@ -76,14 +78,44 @@ class DailyDigest(webapp2.RequestHandler):
             "fallback": fallback,
             "color": color,
             "pretext": pretext,
-            "text": daily_digest()
+            "text": daily_digest(),
+            "actions": [
+                {
+                    "name": "action",
+                    "text": "Claim",
+                    "type": "button",
+                    "value": "value",
+                    "style": "primary"
+                },
+                {
+                    "name": "name",
+                    "text": "Abandon",
+                    "type": "button",
+                    "value": "value"
+                },
+                {
+                    "name": "name",
+                    "text": "Close",
+                    "type": "button",
+                    "value": "value",
+                    "style": "danger"
+                }
+            ]
         }]
-        slack_response = {"text": text, "attachments": attachments}
+        slack_response = {
+            # "response_type": "in_channel",
+            "text": text,
+
+            "attachments": attachments
+        }
         response_object = webapp2.Response(json.dumps(slack_response))
         response_object.content_type = "application/json"
 
         return response_object
 
+    def get(self):
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.write('GET DailyDigest')
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -94,7 +126,3 @@ APP = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/daily_digest', DailyDigest),
 ], debug=True)
-
-if __name__ == "__main__":
-    from paste import httpserver
-    httpserver.serve(APP, host='127.0.0.1', port='8080')

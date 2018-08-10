@@ -3,8 +3,11 @@ api_version: 1
 threadsafe: false
 
 handlers:
+- url: /assets
+  static_dir: assets
 - url: /.*
   script: com_bot.APP
+
 
 libraries:
 - name: ssl

@@ -1,12 +1,11 @@
 # pylint: disable=missing-docstring
+# pylint: disable=wrong-import-position
 
 import sys
 sys.path.append("lib")
 
-import requests
 from requests_toolbelt.adapters import appengine
 import webapp2
-import config
 
 import daily_digest
 import hottest

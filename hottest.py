@@ -1,10 +1,12 @@
-import webapp2
-import config
-import requests
+# pylint: disable=missing-docstring
 import json
-
 from datetime import timedelta
 from datetime import datetime
+import requests
+import webapp2
+import config
+
+
 
 AUTH = {'user': config.ANSWERHUB_USER, 'password': config.ANSWERHUB_PASS}
 URL = (
@@ -18,14 +20,17 @@ def hottest_month():
     web_response = json.loads(comm_response)
 
     # Meant to be on a webpage, so building HTML
-    page_head = "<html><head><link rel='stylesheet' href='/assets/izzy.css' type='text/css'></head>"
+    css_link = "<link rel='stylesheet' href='/assets/izzy.css' type='text/css'>"
+    js_link = "<script src='/assets/izzy.js'></script>"
+    page_head = "<html><head>" + css_link + js_link + "</head>"
 
     response = page_head + "<body><ol>"
     top_questions = top_twenty_questions(web_response["list"])
     for question in top_questions:
         response += (
             "\n <li> <b>[" + time_label(timestamp_to_date(question["lastActiveDate"])) + "]</b> " +
-            "<a href='" + BASE_URL + str(question["id"]) + "/" + question["slug"] + ".html " + "' target='_blank' >" + question["title"] + "</a>" +
+            "<a href='" + BASE_URL + str(question["id"]) + "/" + question["slug"] + ".html " +
+            "' target='_blank' >" + question["title"] + "</a>" +
             "<ul>" +
             "<li>Name: " + str(question["author"]["username"]) + "</li>" +
             "<li>View Count: " + str(question["viewCount"]) + "</li>" +

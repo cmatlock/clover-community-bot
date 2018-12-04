@@ -1,11 +1,12 @@
-import config
-import requests
-import webapp2
-import json
+# pylint: disable=missing-docstring
+# pylint: disable=wrong-import-position
 
 from datetime import timedelta
 from datetime import datetime
-
+import json
+import requests
+import webapp2
+import config
 
 AUTH = {'user': config.ANSWERHUB_USER, 'password': config.ANSWERHUB_PASS}
 URL = (

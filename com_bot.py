@@ -9,9 +9,10 @@ import webapp2
 
 import daily_digest
 import hottest
-import testing
+import overview
 
 appengine.monkeypatch()
+
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -22,5 +23,5 @@ APP = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/daily_digest', daily_digest.DailyDigest),
     ('/hottest', hottest.Hottest),
-    ('/testing', testing.Testing),
+    ('/testing', overview.Overview),
 ], debug=True)

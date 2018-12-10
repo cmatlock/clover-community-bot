@@ -1,19 +1,12 @@
 # pylint: disable=missing-docstring
 
-import json
-import requests
 import webapp2
 import common
 
 def hottest_month():
-    comm_response = requests.get(
-        (
-            common.QUESTION_JSON_URL + "?" + common.PAGE_SIZE_100 +
-            "&" + common.SORT_HOTTEST
-        ),
-        auth=(common.AUTH["user"], common.AUTH["password"])
-    ).text
-    web_response = json.loads(comm_response)
+    web_response = common.get_results(
+        common.QUESTION_JSON_URL + "?" + common.PAGE_SIZE_100 + "&" + common.SORT_HOTTEST
+    )
 
     # Meant to be on a webpage, so building HTML
     response = common.START_HTML + "<ol>"

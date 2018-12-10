@@ -5,3 +5,7 @@ ol li:nth-child(odd) {
 ol li:nth-child(even) {
   background-color: #e2e2e2;
 }
+
+.question.card{
+	height: 200px;
+}

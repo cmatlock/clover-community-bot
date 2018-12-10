@@ -2,20 +2,15 @@
 # pylint: disable=wrong-import-position
 
 import json
-import requests
 import webapp2
 import common
 
 
 def daily_digest():
-    comm_response = requests.get(
-        (
-            common.QUESTION_JSON_URL + "?" + common.PAGE_SIZE_100 +
-            "&" + common.SORT_NEWEST + "&" + common.ONLY_UNANSWERED + "&" + common.INCLUDED_VALUES
-        ),
-        auth=(common.AUTH["user"], common.AUTH["password"])
-    ).text
-    web_response = json.loads(comm_response)
+    web_response = common.get_results(
+        common.QUESTION_JSON_URL + "?" + common.PAGE_SIZE_100 +
+        "&" + common.SORT_NEWEST + "&" + common.ONLY_UNANSWERED + "&" + common.INCLUDED_VALUES
+    )
 
     response = ""
     top_questions = top_ten_questions(web_response["list"])

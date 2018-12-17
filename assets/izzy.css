@@ -1,7 +1,31 @@
 ol li:nth-child(odd) {
-  background-color: #f9f7f7;
+	background-color: #f9f7f7;
 }
 
 ol li:nth-child(even) {
-  background-color: #e2e2e2;
+	background-color: #e2e2e2;
+}
+
+.card-deck .card.question{
+	height: 300px;
+	min-width: 350px;
+	margin-bottom: 15px;
+	overflow: scroll;
+}
+
+.question.card.answered{
+	background-color: #43b02a;
+}
+
+.question.card.inprogress{
+	background-color: #edce3a;
+}
+
+.question.card.untouched{
+	background-color: #ff5555;
+}
+
+.card-footer .btn-link{
+	color: white;
+	background-color: #059adb;
 }

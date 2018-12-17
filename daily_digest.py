@@ -1,31 +1,23 @@
-import config
-import requests
-import webapp2
+# pylint: disable=missing-docstring
+# pylint: disable=wrong-import-position
+
 import json
+import webapp2
+import common
 
-from datetime import timedelta
-from datetime import datetime
-
-
-AUTH = {'user': config.ANSWERHUB_USER, 'password': config.ANSWERHUB_PASS}
-URL = (
-    "https://community.clover.com/services/v2/question.json?unanswered=true&pageSize=100"
-    "&sort=newest&includeOnly=id,slug,title,lastActiveDate"
-)
-BASE_URL = config.BASE_URL
-
-SLACK_WEB_HOOK = config.SLACK_WEB_HOOK
 
 def daily_digest():
-    comm_response = requests.get(URL, auth=(AUTH["user"], AUTH["password"])).text
-    web_response = json.loads(comm_response)
+    web_response = common.get_results(
+        common.QUESTION_JSON_URL + "?" + common.PAGE_SIZE_100 +
+        "&" + common.SORT_NEWEST + "&" + common.ONLY_UNANSWERED + "&" + common.INCLUDED_VALUES
+    )
 
     response = ""
     top_questions = top_ten_questions(web_response["list"])
     for question in top_questions:
         response += (
-            "\n- *[" + time_label(timestamp_to_date(question["lastActiveDate"])) + "]* <" +
-            BASE_URL + str(question["id"]) + "/" + question["slug"] + ".html|" +
+            "\n- *[" + common.create_time_label(question["lastActiveDate"]) +
+            "]* <" + common.create_question_url(question) + "|" +
             question["title"] + ">"
         )
     return response
@@ -36,28 +28,13 @@ def top_ten_questions(question_list):
     chosen_ones = []
     for question in sorted_web_response:
         if all([
-                older_than_two_days(question["lastActiveDate"]),
-                younger_than_one_month(question["lastActiveDate"])
+                common.older_than_two_days(question["lastActiveDate"]),
+                common.younger_than_one_month(question["lastActiveDate"])
         ]):
             chosen_ones.append(question)
             if len(chosen_ones) >= 10:
                 break
     return chosen_ones
-
-def time_label(question_time):
-    age = datetime.now() - question_time
-    return str(age.days) + " days ago"
-
-### Requirements for top questions
-
-def older_than_two_days(timestamp):
-    return timestamp_to_date(timestamp) <= (datetime.now() - timedelta(days=2))
-
-def younger_than_one_month(timestamp):
-    return timestamp_to_date(timestamp) >= (datetime.now() - timedelta(days=30))
-
-def timestamp_to_date(milliseconds):
-    return datetime.fromtimestamp(milliseconds/1e3)
 
 class DailyDigest(webapp2.RequestHandler):
     def post(self):

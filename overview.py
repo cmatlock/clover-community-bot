@@ -4,41 +4,82 @@ import webapp2
 import common
 
 def overview():
-
     web_response = common.get_results(
-        common.QUESTION_JSON_URL + "?" + common.PAGE_SIZE_5 + "&" + common.SORT_HOTTEST
+        common.QUESTION_JSON_URL + "?" + common.ONLY_UNANSWERED + "&" +
+        common.PAGE_SIZE_15 + "&" + common.SORT_HOTTEST
     )
 
-    BODY_START = "<body>"
-    BODY_END = "</body>"
+    overview_start = "<div class='container'><h1>Community Overview</h1>"
+    overview_end = "</div>"
 
-    PAGE_DIV_START = "<div class='grid-frame grid-padding-x'>"
-    PAGE_DIV_END = "</div>"
+    questions_section_start = "<div class='card-deck'>"
+    questions_section_end = "</div>"
 
-    GRID_HEADER = "<div class='cell shrink header'><h1>Header Here</h1></div>"
-    GRID_FOOTER = "<div class='cell shrink footer'><h3>Hitlist returned!</h3></div>"
-
-    QUESTIONS_SECTION_START = "<div class='cell'><div class='grid-x grid-padding-x'>"
-    QUESTIONS_SECTION_END = "</div></div>"
-
-    QUESTION_START = "<div class='cell small-4'><div class='card question small-cell-block-y'>"
-    QUESTION_END = "</div></div>"
     # Meant to be on a webpage, so building HTML
-    response = common.PAGE_HEADER + BODY_START + PAGE_DIV_START + GRID_HEADER + QUESTIONS_SECTION_START
+    response = common.WEB_PAGE_START + overview_start + questions_section_start
     top_questions = top_twenty_questions(web_response["list"])
 
     for question in top_questions:
-        response += QUESTION_START
-        response += question["title"] + "<br>"
-        response += all_users_comments(common.create_question_comments_api(question))
-        response += all_users_answers(common.create_question_answers_api(question))
-        response += QUESTION_END
+        question_card_start = "<div class='card question " + question_status(question) + "'>"
+        question_card_end = "</div>"
 
-    response += QUESTIONS_SECTION_END + GRID_FOOTER + PAGE_DIV_END + BODY_END + common.END_HTML
+        response += question_card_start
+        response += question_header(question)
+        response += question_body(question)
+        response += question_footer(question)
+        response += question_card_end
+
+    response += questions_section_end + overview_end + common.WEB_PAGE_END
+
     return response
 
+def question_header(question):
+    response = ""
+
+    question_title_start = "<div class='card-header text-truncate'>"
+    question_title_end = "</div>"
+
+    response += question_title_start
+    response += question["title"]
+    response += question_title_end
+
+    return response
+
+def question_body(question):
+    response = ""
+    question_body_start = "<div class='card-body'>"
+    question_body_end = "</div>"
+
+    response += question_body_start
+    response += all_users_comments(common.create_question_comments_api(question))
+    response += all_users_answers(common.create_question_answers_api(question))
+    response += question_body_end
+
+    return response
+
+def question_footer(question):
+    response = ""
+    question_footer_start = "<div class='card-footer'>"
+    question_footer_end = "</div>"
+
+    response += question_footer_start
+    response += "<a href='" + common.create_question_url(question) + "' class='btn btn-link btn-block btn-sm' target='_blank'> Here </a>"
+    response += question_footer_end
+    return response
+
+def question_status(question):
+
+    if question["marked"]:
+        return "answered"
+
+    if question["answerCount"] + len(question["commentIds"]) == 0:
+        return "untouched"
+
+    # bootstrap already uses 'progress' so...
+    return "inprogress"
+
 def all_users_comments(question):
-    user_list = "Commenting Users: <ul>"
+    user_list = "<dt>Commenting Users:</dt>"
     unique_names = []
     comments = common.get_results(question)["list"]
     for comment in comments:
@@ -46,16 +87,16 @@ def all_users_comments(question):
         if name not in unique_names:
             unique_names.append(name)
             user_list += (
-                "<li>Name: " + str(name) + "</li>"
+                "<dd>- " + str(name) + "</dd>"
             )
 
     if not unique_names:
-        user_list += "No one has commented..."
+        user_list += "<dd>No one has commented...</dd>"
 
-    return user_list + "</ul>"
+    return user_list
 
 def all_users_answers(question):
-    user_list = "Answering Users: <ul>"
+    user_list = "<dt>Answering Users: </dt>"
     unique_names = []
     answers = common.get_results(question)["list"]
     for answer in answers:
@@ -63,13 +104,13 @@ def all_users_answers(question):
         if name not in unique_names:
             unique_names.append(name)
             user_list += (
-                "<li>Name: " + str(name) + "</li>"
+                "<dd>- " + str(name) + "</dd>"
             )
 
     if not unique_names:
-        user_list += "No one has answered..."
+        user_list += "<dd>No one has answered...</dd>"
 
-    return user_list + "</ul>"
+    return user_list
 
 def top_twenty_questions(question_list):
     chosen_ones = []
@@ -78,7 +119,7 @@ def top_twenty_questions(question_list):
                 common.younger_than_one_month(question["lastActiveDate"])
         ]):
             chosen_ones.append(question)
-            if len(chosen_ones) >= 20:
+            if len(chosen_ones) >= 50:
                 break
     return chosen_ones
 

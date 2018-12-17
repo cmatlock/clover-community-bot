@@ -23,5 +23,5 @@ APP = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/daily_digest', daily_digest.DailyDigest),
     ('/hottest', hottest.Hottest),
-    ('/testing', overview.Overview),
+    ('/overview', overview.Overview),
 ], debug=True)

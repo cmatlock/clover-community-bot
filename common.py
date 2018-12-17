@@ -21,10 +21,8 @@ JSON = ".json"
 ANSWERHUB_QUESTION_API = "/services/v2/question"
 QUESTION_JSON_URL = BASE_URL + ANSWERHUB_QUESTION_API + JSON
 
-testing_url = "https://community.clover.com/services/v2/question/9233.json"
-
 PAGE_SIZE_100 = "pageSize=100"
-PAGE_SIZE_5 = "pageSize=5"
+PAGE_SIZE_15 = "pageSize=15"
 
 SORT_HOTTEST = "sort=hottest"
 SORT_NEWEST = "sort=newest"
@@ -36,17 +34,19 @@ INCLUDED_VALUES = "includeOnly=id,slug,title,lastActiveDate"
 # HTML
 CSS_LINK = (
     "<link rel='stylesheet' href='/assets/izzy.css' type='text/css'>" +
-    "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/css/foundation.min.css' integrity='sha256-1mcRjtAxlSjp6XJBgrBeeCORfBp/ppyX4tsvpQVCcpA= sha384-b5S5X654rX3Wo6z5/hnQ4GBmKuIJKMPwrJXn52ypjztlnDK2w9+9hSMBz/asy9Gw sha512-M1VveR2JGzpgWHb0elGqPTltHK3xbvu3Brgjfg4cg5ZNtyyApxw/45yHYsZ/rCVbfoO5MSZxB241wWq642jLtA==' crossorigin='anonymous'>"
+    "<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css' integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO' crossorigin='anonymous'>"
 )
 JS_LINK = (
     "<script src='https://code.jquery.com/jquery-3.3.1.min.js' integrity='sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=' crossorigin='anonymous'></script>" +
     "<script src='/assets/izzy.js'></script>" +
-    "<script src='https://cdn.jsdelivr.net/npm/foundation-sites@6.5.1/dist/js/foundation.min.js' integrity='sha256-WUKHnLrIrx8dew//IpSEmPN/NT3DGAEmIePQYIEJLLs= sha384-53StQWuVbn6figscdDC3xV00aYCPEz3srBdV/QGSXw3f19og3Tq2wTRe0vJqRTEO sha512-X9O+2f1ty1rzBJOC8AXBnuNUdyJg0m8xMKmbt9I3Vu/UOWmSg5zG+dtnje4wAZrKtkopz/PEDClHZ1LXx5IeOw==' crossorigin='anonymous'></script>" 
+    "<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js' integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy' crossorigin='anonymous'></script>"
 )
 
 START_HTML = "<html>"
 END_HTML = "</html>"
+
 PAGE_HEADER = "<head>" + CSS_LINK + JS_LINK + "</head>"
+
 WEB_PAGE_START = PAGE_HEADER + "<body>"
 WEB_PAGE_END = "</body>" + END_HTML
 

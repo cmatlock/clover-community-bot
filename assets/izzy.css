@@ -1,3 +1,9 @@
+:root {
+	--answered: #43b02a;
+	--inprogress: #edce3a;
+	--untouched: #ff5555;
+}
+
 ol li:nth-child(odd) {
 	background-color: #f9f7f7;
 }
@@ -13,16 +19,16 @@ ol li:nth-child(even) {
 	overflow: scroll;
 }
 
-.question.card.answered{
-	background-color: #43b02a;
+.question.card.answered, .answered{
+	background-color: var(--answered);
 }
 
-.question.card.inprogress{
-	background-color: #edce3a;
+.question.card.inprogress, .inprogress{
+	background-color: var(--inprogress);
 }
 
-.question.card.untouched{
-	background-color: #ff5555;
+.question.card.untouched, .untouched{
+	background-color: var(--untouched);
 }
 
 .card-footer .btn-link{

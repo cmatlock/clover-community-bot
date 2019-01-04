@@ -6,10 +6,7 @@ import json
 import requests
 import config
 
-
 SLACK_WEB_HOOK = config.SLACK_WEB_HOOK
-
-
 
 # Specific to AnswerHub
 AUTH = {'user': config.ANSWERHUB_USER, 'password': config.ANSWERHUB_PASS}
@@ -20,6 +17,8 @@ JSON = ".json"
 
 ANSWERHUB_QUESTION_API = "/services/v2/question"
 QUESTION_JSON_URL = BASE_URL + ANSWERHUB_QUESTION_API + JSON
+
+APP_MARKET_SPACE = "spaceId=12"
 
 PAGE_SIZE_100 = "pageSize=100"
 PAGE_SIZE_15 = "pageSize=15"

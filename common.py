@@ -21,7 +21,7 @@ QUESTION_JSON_URL = BASE_URL + ANSWERHUB_QUESTION_API + JSON
 APP_MARKET_SPACE = "spaceId=12"
 
 PAGE_SIZE_100 = "pageSize=100"
-PAGE_SIZE_15 = "pageSize=15"
+PAGE_SIZE_30 = "pageSize=30"
 
 SORT_HOTTEST = "sort=hottest"
 SORT_NEWEST = "sort=newest"

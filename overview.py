@@ -6,7 +6,7 @@ import common
 def overview():
     web_response = common.get_results(
         common.QUESTION_JSON_URL + "?" + common.APP_MARKET_SPACE + "&"+
-        common.ONLY_UNANSWERED + "&" + common.PAGE_SIZE_15 + "&" + common.SORT_HOTTEST
+        common.ONLY_UNANSWERED + "&" + common.PAGE_SIZE_30 + "&" + common.SORT_HOTTEST
     )
 
     overview_start = "<div class='container'><h1>App Market Community Overview</h1>"

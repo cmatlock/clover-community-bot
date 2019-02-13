@@ -6,8 +6,14 @@ import common
 def overview():
     web_response = common.get_results(
         common.QUESTION_JSON_URL + "?" + common.APP_MARKET_SPACE + "&"+
-        common.ONLY_UNANSWERED + "&" + common.PAGE_SIZE_30 + "&" + common.SORT_HOTTEST
+        common.ONLY_UNANSWERED + "&" + common.PAGE_SIZE_50 + "&" + common.INCLUDED_VALUES
     )
+
+    clover_users = common.get_results(common.CLOVER_USERS_URL)["list"]
+    clover_ids = []
+
+    for user in clover_users:
+        clover_ids.append(user.get("id"))
 
     overview_start = "<div class='container'><h1>App Market Community Overview</h1>"
     overview_end = "</div>"
@@ -41,31 +47,26 @@ def overview():
         "</div>"
         "<br>"
     )
-    questions_section_start = "<div class='card-deck'>"
-    questions_section_end = "</div>"
 
     # Meant to be on a webpage, so building HTML
-    response = common.WEB_PAGE_START + overview_start + legend + questions_section_start
-    top_questions = top_twenty_questions(web_response["list"])
+    response = common.WEB_PAGE_START + overview_start + legend
 
-    for question in top_questions:
-        question_card_start = "<div class='card question " + question_status(question) + "'>"
-        question_card_end = "</div>"
+    clover_questions, user_questions = separate_by_last_active_user(web_response["list"], clover_ids)
 
-        response += question_card_start
-        response += question_header(question)
-        response += question_body(question)
-        response += question_footer(question)
-        response += question_card_end
+    response += "<h2>Last Response From Users</h2>"
+    response += populate_cards(sorted(user_questions, key=lambda x_y: x_y["lastActiveDate"]))
 
-    response += questions_section_end + overview_end + common.WEB_PAGE_END
+    response += "<h2>Last Response From Clover</h2>"
+    response += populate_cards(sorted(clover_questions, key=lambda x_y: x_y["lastActiveDate"]))
+
+    response += overview_end + common.WEB_PAGE_END
 
     return response
 
-def question_header(question):
+def question_header(question, status):
     response = ""
 
-    question_title_start = "<div class='card-header text-truncate'>"
+    question_title_start = "<div class='card-header font-weight-bold text-truncate bg-" + status + "'>"
     question_title_end = "</div>"
 
     response += question_title_start
@@ -75,42 +76,44 @@ def question_header(question):
     return response
 
 def question_body(question):
-    response = ""
-    question_body_start = "<div class='card-body'>"
-    question_body_end = "</div>"
+    response = "<div class='card-body bg-transparent'>"
 
-    response += question_body_start
     response += all_users_comments(common.create_question_comments_api(question))
     response += all_users_answers(common.create_question_answers_api(question))
-    response += question_body_end
 
-    return response
+    return response + "</div>"
 
-def question_footer(question):
+def question_footer(question, status):
     response = ""
-    question_footer_start = "<div class='card-footer'>"
+
+    question_footer_start = "<div class='card-footer font-italic border-" + status + "'>"
     question_footer_end = "</div>"
 
     response += question_footer_start
-    response += "<a href='" + common.create_question_url(question) + "' class='btn btn-link btn-block btn-sm' target='_blank'> View </a>"
+    response += "<div class='float-left'>" + common.create_time_label(question["lastActiveDate"]) + "</div>"
+    response += "<a href='" + common.create_question_url(question) + "' class='btn btn-sm btn-dark float-right' target='_blank'> View </a>"
     response += question_footer_end
+
     return response
 
 def question_status(question):
+    # returns Bootstrap keyword for color/formatting
 
     if question["marked"]:
-        return "answered"
+        return "success"
 
-    if question["answerCount"] + len(question["commentIds"]) == 0:
-        return "untouched"
+    # Not an accurate representation; find a better indicator
+    if (len(question["childrenIds"])) == 0:
+        return "danger"
 
-    # bootstrap already uses 'progress' so...
-    return "inprogress"
+    return "warning"
 
 def all_users_comments(question):
     user_list = "<dt>Commenting Users:</dt>"
     unique_names = []
+
     comments = common.get_results(question)["list"]
+
     for comment in comments:
         name = comment["author"]["username"]
         if name not in unique_names:
@@ -127,7 +130,9 @@ def all_users_comments(question):
 def all_users_answers(question):
     user_list = "<dt>Answering Users: </dt>"
     unique_names = []
+
     answers = common.get_results(question)["list"]
+
     for answer in answers:
         name = answer["author"]["username"]
         if name not in unique_names:
@@ -141,17 +146,35 @@ def all_users_answers(question):
 
     return user_list
 
-def top_twenty_questions(question_list):
-    chosen_ones = []
-    for question in question_list:
-        if all([
-                common.younger_than_one_month(question["lastActiveDate"])
-        ]):
-            chosen_ones.append(question)
-            if len(chosen_ones) >= 50:
-                break
-    return chosen_ones
+def separate_by_last_active_user(question_list, id_list):
+    clovers_questions = []
+    users_questions = []
 
+    for question in question_list:
+        if question["lastActiveUserId"] in id_list:
+            clovers_questions.append(question)
+        else:
+            users_questions.append(question)
+
+    return clovers_questions, users_questions
+
+def populate_cards(questions):
+    # start the deck of cards section
+    response = "<div class='card-deck'>"
+
+    for question in questions:
+        status = question_status(question)
+
+        question_card_start = "<div class='card question border-" + status + "'>"
+        question_card_end = "</div>"
+
+        response += question_card_start
+        response += question_header(question, status)
+        response += question_body(question)
+        response += question_footer(question, status)
+        response += question_card_end
+
+    return response + "</div>"
 
 class Overview(webapp2.RequestHandler):
     def get(self):

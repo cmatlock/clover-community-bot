@@ -15,12 +15,16 @@ BASE_URL = config.BASE_URL
 QUESTION_URL = BASE_URL + "/questions"
 JSON = ".json"
 
-ANSWERHUB_QUESTION_API = "/services/v2/question"
+ANSWERHUB_API = "/services/v2/"
+ANSWERHUB_QUESTION_API = ANSWERHUB_API + "question"
+
+
 QUESTION_JSON_URL = BASE_URL + ANSWERHUB_QUESTION_API + JSON
 
 APP_MARKET_SPACE = "spaceId=12"
 
 PAGE_SIZE_100 = "pageSize=100"
+PAGE_SIZE_50 = "pageSize=50"
 PAGE_SIZE_30 = "pageSize=30"
 
 SORT_HOTTEST = "sort=hottest"
@@ -28,7 +32,11 @@ SORT_NEWEST = "sort=newest"
 
 ONLY_UNANSWERED = "unanswered=true"
 
-INCLUDED_VALUES = "includeOnly=id,slug,title,lastActiveDate"
+INCLUDED_VALUES = "includeOnly=id,slug,title,lastActiveDate,lastActiveUserId,childrenIds,commentIds,answers,author,marked"
+
+# List of current Clover Employees active on Community
+CLOVER_USERS_URL = BASE_URL + ANSWERHUB_API + "group/16/user" + JSON + "?includeOnly=id"
+
 
 # HTML
 CSS_LINK = (
@@ -48,7 +56,6 @@ PAGE_HEADER = "<head>" + CSS_LINK + JS_LINK + "</head>"
 
 WEB_PAGE_START = PAGE_HEADER + "<body>"
 WEB_PAGE_END = "</body>" + END_HTML
-
 
 
 def get_results(url):

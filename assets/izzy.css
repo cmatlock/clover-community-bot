@@ -16,7 +16,6 @@ ol li:nth-child(even) {
 	height: 300px;
 	min-width: 350px;
 	margin-bottom: 15px;
-	overflow: scroll;
 }
 
 .question.card.answered, .answered{

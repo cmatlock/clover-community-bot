@@ -1,19 +1,26 @@
 # pylint: disable=missing-docstring
 
 import webapp2
+import threading
 import common
 
+array_lock = threading.Lock()
+CLOVER_IDs = []
+
 def overview():
-    web_response = common.get_results(
-        common.QUESTION_JSON_URL + "?" + common.APP_MARKET_SPACE + "&"+
-        common.ONLY_UNANSWERED + "&" + common.PAGE_SIZE_50 + "&" + common.INCLUDED_VALUES
+    CLOVER_IDs = CLOVER_IDs or get_clover_ids
+
+    relevant_url = (
+        common.QUESTION_JSON_URL + "?" + common.APP_MARKET_SPACE + "&"+ common.ONLY_UNANSWERED +
+        "&" + common.PAGE_SIZE_10 + "&" + common.INCLUDED_VALUES
     )
 
-    clover_users = common.get_results(common.CLOVER_USERS_URL)["list"]
-    clover_ids = []
-
-    for user in clover_users:
-        clover_ids.append(user.get("id"))
+    # question_list = common.get_results(
+    #     common.QUESTION_JSON_URL + "?" + common.APP_MARKET_SPACE + "&"+ common.ONLY_UNANSWERED +
+    #     "&" + common.PAGE_SIZE_100 + "&" + common.INCLUDED_VALUES
+    # )["list"]
+    
+    question_list = release_the_sniffers(relevant_url)
 
     overview_start = "<div class='container'><h1>App Market Community Overview</h1>"
     overview_end = "</div>"
@@ -51,7 +58,7 @@ def overview():
     # Meant to be on a webpage, so building HTML
     response = common.WEB_PAGE_START + overview_start + legend
 
-    clover_questions, user_questions = separate_by_last_active_user(web_response["list"], clover_ids)
+    clover_questions, user_questions = separate_by_last_active_user(question_list, clover_ids)
 
     response += "<h2>Last Response From Users</h2>"
     response += populate_cards(sorted(user_questions, key=lambda x_y: x_y["lastActiveDate"]))
@@ -62,6 +69,14 @@ def overview():
     response += overview_end + common.WEB_PAGE_END
 
     return response
+
+def get_clover_ids():
+    clover_users = common.get_results(common.CLOVER_USERS_URL)["list"]
+    ids = []
+
+    for user in clover_users:
+        ids.append(user.get("id"))
+    return ids
 
 def question_header(question, status):
     response = ""
@@ -158,10 +173,15 @@ def separate_by_last_active_user(question_list, id_list):
 
     return clovers_questions, users_questions
 
-def populate_cards(questions):
+def populate_card_deck():
     # start the deck of cards section
     response = "<div class='card-deck'>"
 
+    return response + "</div>"
+
+def prepare_cards(questions):
+    
+    
     for question in questions:
         status = question_status(question)
 
@@ -174,7 +194,52 @@ def populate_cards(questions):
         response += question_footer(question, status)
         response += question_card_end
 
-    return response + "</div>"
+def create_sniffer(num, base_url):
+    t = threading.Thread(name=("sniffer"+num), target=start_sniffers, args=(num, base_url))
+    return t
+
+def start_sniffers(num, base_url):
+    print ">>>sniffer " + num + " started "
+    questions = []
+
+    if int(num) > 1:
+        questions = common.get_page_of_questions(num, base_url)
+
+    clover_questions, user_questions = separate_by_last_active_user(questions, CLOVER_IDs)
+    
+
+    for question in questions:
+        with array_lock:
+            RETURNED_QUESTIONS.append(question)
+
+    print "<<sniffer " + num + " completed"
+
+def release_the_sniffers(relevant_url):
+    sniffer_list = []
+
+    web_response = common.get_results(relevant_url)
+
+    page_count = web_response["pageCount"]
+
+    if int(page_count) > 10:
+        page_count = 10
+
+    RETURNED_QUESTIONS.extend(web_response["list"])
+
+    for i in range(page_count):
+        sniffer_list.append(create_sniffer(str(i+1), relevant_url))
+
+    print 'So, {0} pages found, so {1} sniffer(s) popped into existence.'.format(page_count, len(sniffer_list))
+    print 'No threads started yet.'
+
+    for sniffer in sniffer_list:
+        sniffer.start()
+
+    for sniffer in sniffer_list:
+        sniffer.join()
+
+    print " final question length: " + str(len(RETURNED_QUESTIONS))
+    return RETURNED_QUESTIONS
 
 class Overview(webapp2.RequestHandler):
     def get(self):

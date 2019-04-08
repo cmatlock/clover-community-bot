@@ -35,31 +35,10 @@ SORT_NEWEST = "sort=newest"
 
 ONLY_UNANSWERED = "unanswered=true"
 
-INCLUDED_VALUES = "includeOnly=id,slug,title,lastActiveDate,lastActiveUserId,childrenIds,commentIds,answers,author,marked"
+INCLUDED_VALUES = "includeOnly=id,slug,title,lastActiveDate,lastActiveUserId,childrenIds,commentIds,answers,author,author.username,marked,bodyAsHTML"
 
 # List of current Clover Employees active on Community
 CLOVER_USERS_URL = BASE_URL + ANSWERHUB_API + "group/16/user" + JSON + "?includeOnly=id"
-
-# qObject = common.QuestionCard(common.get_results("https://community.clover.com/services/v2/question/14206.json"))
-
-# HTML
-CSS_LINK = (
-    "<link rel='stylesheet' href='/assets/izzy.css' type='text/css'>" +
-    "<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css' integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO' crossorigin='anonymous'>"
-)
-JS_LINK = (
-    "<script src='https://code.jquery.com/jquery-3.3.1.min.js' integrity='sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=' crossorigin='anonymous'></script>" +
-    "<script src='/assets/izzy.js'></script>" +
-    "<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js' integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy' crossorigin='anonymous'></script>"
-)
-
-START_HTML = "<html>"
-END_HTML = "</html>"
-
-PAGE_HEADER = "<head>" + CSS_LINK + JS_LINK + "</head>"
-
-WEB_PAGE_START = PAGE_HEADER + "<body>"
-WEB_PAGE_END = "</body>" + END_HTML
 
 CLOVER_OWNED_QUESTIONS = []
 clover_lock = threading.Lock()
@@ -78,8 +57,9 @@ class QuestionCard:
         self.childrenIds = question['childrenIds']
         self.commentIds = question['commentIds']
         self.answers = question['answers']
-        self.author = question['author']
+        self.author = question['author']['username']
         self.marked = question['marked']
+        self.html_body = question['bodyAsHTML']
 
         self.browser_url = create_question_url(question)
         self.answers_url_api = self.create_question_answers_api()
@@ -87,10 +67,14 @@ class QuestionCard:
         self.status = self.question_status()
         self.answer_count = question['answerCount']
         self.last_active = timestamp_to_date(question["lastActiveDate"])
+        self.time_label = create_time_label(self.lastActiveDate)
 
         self.delete_url = self.create_question_delete_api()
+        self.close_url = self.create_question_close_api()
+        self.lock_url = self.create_question_lock_api()
         self.answers = []
-        self.html_card = self.html_bootstrap_card()
+        self.body = self.question_body()
+        # self.html_card = self.html_bootstrap_card()
 
     def console_question(self):
         print '{:^80}'.format("Current Question")
@@ -142,12 +126,14 @@ class QuestionCard:
         return response
 
     def question_body(self):
-        response = "<div class='card-body bg-transparent'>"
+        # response = "<div class='card-body bg-transparent'>"
 
+        response = ""
         response += self.all_users_comments(self.comments_url_api)
         response += self.all_users_answers(self.answers_url_api)
 
-        return response + "</div>"
+        # return response + "</div>"
+        return response
 
     def question_footer(self):
         response = ""
@@ -156,6 +142,7 @@ class QuestionCard:
         question_footer_end = "</div>"
 
         response += question_footer_start
+        response += "<button type='button' class='btn btn-sm btn-dark float-right' data-toggle='modal' data-target='#questionDetails' data-commid='"+str(self.id)+"'>Quick View</button>"
         response += "<div class='float-left'>" + create_time_label(self.lastActiveDate) + "</div>"
         response += "<a href='" + self.browser_url + "' class='btn btn-sm btn-dark float-right' target='_blank'> View </a>"
         response += question_footer_end
@@ -185,11 +172,11 @@ class QuestionCard:
             if name not in unique_names:
                 unique_names.append(name)
                 user_list += (
-                    "<dd>- " + str(name) + "</dd>"
+                    "<dd class='ml-3'>" + str(name) + "</dd>"
                 )
 
         if not unique_names:
-            user_list += "<dd>No one has commented...</dd>"
+            user_list += "<dd class='ml-3'>No one has commented...</dd>"
 
         return user_list
 
@@ -204,11 +191,11 @@ class QuestionCard:
             if name not in unique_names:
                 unique_names.append(name)
                 user_list += (
-                    "<dd>- " + str(name) + "</dd>"
+                    "<dd class='ml-3'>" + str(name) + "</dd>"
                 )
 
         if not unique_names:
-            user_list += "<dd>No one has answered...</dd>"
+            user_list += "<dd class='ml-3'>No one has answered...</dd>"
 
         return user_list
 
@@ -221,12 +208,18 @@ class QuestionCard:
     def create_question_answers_api(self):
         return BASE_URL + ANSWERHUB_QUESTION_API + "/" + str(self.id) + "/answer" + JSON
 
+    def create_question_close_api(self):
+        return BASE_URL + ANSWERHUB_API + "node/" + str(self.id) + "/close" + JSON + "?lock=true&prompt=automated"
+
+    def create_question_lock_api(self):
+        return BASE_URL + ANSWERHUB_API + "node/" + str(self.id) + "/lock" + JSON
+
 def get_results(url):
     comm_response = requests.get(url, auth=(AUTH["user"], AUTH["password"])).text
     return json.loads(comm_response)
 
 def put_results(url):
-    comm_response = requests.put(url, auth=(AUTH["user"], AUTH["password"])).text
+    comm_response = requests.put(url, auth=(AUTH["user"], AUTH["password"]))
     return comm_response
 
 def get_clover_ids():

@@ -1,24 +1,12 @@
 $(document).on('show.bs.modal', function(event){
+  // Quick View; Grabs the body of the question based on the ID
   var button = $(event.relatedTarget);
   var nodeID = button.data('commid');
   var modal = $(this);
   makeRequest(nodeID);
-  // response_area = document.getElementById("test-response");
-  // modal.find('#question-body-content').text(nodeID);
 });
 
-
 var httpRequest;
-// var response_area;
-// $(document).ready(function(){
-//   console.log("getting it");
-//   var button = $(event.relatedTarget);
-//   var nodeID = button.data('commid');
-//   var question_url = "https://community.clover.com/services/v2/question/" + str(nodeID) + ".json"
-
-//   document.getElementById('test-button').addEventListener('click', makeRequest)
-//   response_area = document.getElementById("test-response")
-// });
 
 function makeRequest(nodeID){
   httpRequest = new XMLHttpRequest();

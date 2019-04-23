@@ -71,19 +71,15 @@ class QuestionCard:
 
         self.delete_url = self.create_question_delete_api()
         self.close_url = self.create_question_close_api()
-        self.lock_url = self.create_question_lock_api()
         self.answers = []
         self.body = self.question_body()
-        # self.html_card = self.html_bootstrap_card()
 
     def console_question(self):
         print '{:^80}'.format("Current Question")
-
         print '{:<80}'.format("Title       : " + self.title)
         print '{:<80}'.format("URL         : " + self.browser_url)
         print '{:<80}'.format("Answer Count: " + str(self.answer_count))
         print '{:<80}'.format("Last Active : " + str(self.last_active.date()))
-
         print '{:~^80}'.format("")
 
     def console_answers(self):
@@ -126,13 +122,9 @@ class QuestionCard:
         return response
 
     def question_body(self):
-        # response = "<div class='card-body bg-transparent'>"
-
         response = ""
         response += self.all_users_comments(self.comments_url_api)
         response += self.all_users_answers(self.answers_url_api)
-
-        # return response + "</div>"
         return response
 
     def question_footer(self):
@@ -140,11 +132,13 @@ class QuestionCard:
 
         question_footer_start = "<div class='card-footer font-italic border-" + self.status + "'>"
         question_footer_end = "</div>"
+        quick_view_button = "<button type='button' class='btn btn-sm btn-dark float-right' data-toggle='modal' data-target='#questionDetails' data-commid='"+str(self.id)+"'>Quick View</button>"
+        view_button = "<a href='" + self.browser_url + "' class='btn btn-sm btn-dark float-right' target='_blank'> View </a>"
 
         response += question_footer_start
-        response += "<button type='button' class='btn btn-sm btn-dark float-right' data-toggle='modal' data-target='#questionDetails' data-commid='"+str(self.id)+"'>Quick View</button>"
         response += "<div class='float-left'>" + create_time_label(self.lastActiveDate) + "</div>"
-        response += "<a href='" + self.browser_url + "' class='btn btn-sm btn-dark float-right' target='_blank'> View </a>"
+        response += quick_view_button
+        response += view_button
         response += question_footer_end
 
         return response
@@ -209,10 +203,8 @@ class QuestionCard:
         return BASE_URL + ANSWERHUB_QUESTION_API + "/" + str(self.id) + "/answer" + JSON
 
     def create_question_close_api(self):
+        # Closes and locks comments on a question
         return BASE_URL + ANSWERHUB_API + "node/" + str(self.id) + "/close" + JSON + "?lock=true&prompt=automated"
-
-    def create_question_lock_api(self):
-        return BASE_URL + ANSWERHUB_API + "node/" + str(self.id) + "/lock" + JSON
 
 def get_results(url):
     comm_response = requests.get(url, auth=(AUTH["user"], AUTH["password"])).text

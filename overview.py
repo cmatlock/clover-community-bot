@@ -9,6 +9,8 @@ import common
 import communityCrawler
 
 def overview():
+    common.USER_OWNED_QUESTIONS = []
+    common.CLOVER_OWNED_QUESTIONS = []
     relevant_url = (
         common.QUESTION_JSON_URL + "?" + common.APP_MARKET_SPACE + "&"+ common.ONLY_UNANSWERED +
         "&" + common.PAGE_SIZE_10 + "&" + common.INCLUDED_VALUES
@@ -16,9 +18,7 @@ def overview():
     
     create_start_crawlers(relevant_url)
 
-    # Meant to be on a webpage, so building HTML
     user_questions = sorted(common.USER_OWNED_QUESTIONS, key=lambda x_y: x_y.lastActiveDate)
-
     clover_questions = sorted(common.CLOVER_OWNED_QUESTIONS, key=lambda x_y: x_y.lastActiveDate)
 
     return [user_questions, clover_questions]
@@ -47,12 +47,7 @@ class Overview(webapp2.RequestHandler):
         results = overview()
         template_values = {
             "user_questions": results[0],
-            "clover_questions": results[1],
-            "testList": [
-                "five",
-                "ten",
-                "another weird thing"
-            ]
+            "clover_questions": results[1]
         }
 
         path = os.path.join('templates/overview.html')

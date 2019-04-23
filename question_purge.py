@@ -28,25 +28,10 @@ def get_page_of_questions(num):
 def which_to_delete(page_question_list):
     for question in page_question_list:
         if (
-            # (question["childrenIds"] == []) and
             (common.timestamp_to_date(question["lastActiveDate"]).year <= 2018)
         ):
             with array_lock:
                 ignored_questions.append(common.QuestionCard(question))
-
-def delete_criteria(question_url="https://community.clover.com/services/v2/question/3031.json"):
-    question = common.get_results(question_url)
-    new_question = common.get_results("https://community.clover.com/services/v2/question/3031.json")
-
-
-    if (
-            # (question["childrenIds"] == []) and
-            (common.timestamp_to_date(question["lastActiveDate"]).year <= 2018)
-        ):
-        return True
-    return False
-
-
 
 def delete_each_question():
     in_progress = True
@@ -76,22 +61,18 @@ def delete_each_question():
 
     return False
 
-
 def delete_all_questions():
-    # for question_url in ignored_questions:
-        # result = common.put_results(question_url[1])
-        # print '{0}, {1}, {2}'.format(result, question_url[0], question_url[1])
-    return False
     for question in ShadyBar('Delete Progress').iter(ignored_questions):
         common.put_results(question['delete_url'])
 
+def close_all_questions():
+    for question in ignored_questions:
+        print question.browser_url
+        common.put_results(question.close_url)
 
 array_lock = threading.Lock()
 ignored_questions = []
-base_url = "https://community.clover.com/services/v2/question.json?spaceId=12&pageSize=50"
-# base_url = "https://community.clover.com/services/v2/question.json?pageSize=50"
-
-
+base_url = "https://community.clover.com/services/v2/question.json?pageSize=50"
 
 sniffer_list = []
 
@@ -100,7 +81,6 @@ def begin_purge():
     page_count = answerhub_response["pageCount"]
 
     for i in range(page_count):
-    # for i in range(2):
         create_sniffer(str(i))
 
     print '{0} pages found, so {1} sniffer(s) popped into existence.'.format(page_count, len(sniffer_list))
@@ -117,22 +97,26 @@ def begin_purge():
 
     running = True
     while running:
-        response = raw_input('Continue? y/n/all: ').lower()
-        if response == 'y':
-            print 'Begin deleting questions....'
-            running = delete_each_question()
-        elif response == 'n':
-            print 'No questions deleted. Exiting...'
-            running = False
-        elif response == 'all': 
-            print 'Are you sure? This will delete all {0} questions in one go.'.format(len(ignored_questions))
-            response = raw_input('Are you sure you\'re really sure??? y/n: ').lower()
+        response = raw_input('Delete or Close?: ').lower()
+        if response == 'delete':
+            response = raw_input('Continue to delete? y/n/all: ').lower()
             if response == 'y':
-                print 'Deleting all questions...'
-                running = delete_all_questions()
-            else:
-                print 'Operation aborted. No questions deleted.'
+                print 'Begin deleting questions....'
+                running = delete_each_question()
+            elif response == 'n':
+                print 'No questions deleted. Exiting...'
                 running = False
+            elif response == 'all':
+                print 'Are you sure? This will delete all {0} questions in one go.'.format(len(ignored_questions))
+                response = raw_input('Are you sure you\'re really sure??? y/n: ').lower()
+                if response == 'y':
+                    print 'Deleting all questions...'
+                    running = delete_all_questions()
+                else:
+                    print 'Operation aborted. No questions deleted.'
+                    running = False
+        if response == 'close':
+            running = close_all_questions()
         else:
             print 'Invalid response'
 

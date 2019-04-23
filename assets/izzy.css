@@ -13,10 +13,9 @@ ol li:nth-child(even) {
 }
 
 .card-deck .card.question{
-	height: 300px;
+	min-height: 200px;
 	min-width: 350px;
 	margin-bottom: 15px;
-	overflow: scroll;
 }
 
 .question.card.answered, .answered{

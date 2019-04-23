@@ -1,0 +1,129 @@
+<html>
+<head>
+	<link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css' integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO' crossorigin='anonymous'>
+	<link rel='stylesheet' href='/assets/izzy.css' type='text/css'>
+
+
+	<script src='https://code.jquery.com/jquery-3.3.1.min.js' integrity='sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=' crossorigin='anonymous'></script>
+	<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js' integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy' crossorigin='anonymous'></script>
+	<script src='/assets/izzy.js'></script>
+</head>
+<body>
+	<div class='container'><h1>App Market Community Overview</h1>
+		<p>
+			<button class='btn btn-sm answered' type='button' data-toggle='collapse' data-target='#answered' aria-expanded='false' aria-controls='answered'>
+				Answered
+			</button> 
+			<button class='btn btn-sm inprogress' type='button' data-toggle='collapse' data-target='#inprogress' aria-expanded='false' aria-controls='inprogress'>
+				In Progress
+			</button> 
+			<button class='btn btn-sm untouched' type='button' data-toggle='collapse' data-target='#untouched' aria-expanded='false' aria-controls='untouched'>
+				Untouched
+			</button> 
+
+			<div class='collapse' id='answered'>
+				<div class='card card-body question answered'>
+					This indicates that an answer has been provided an accepted. Currently, answered questions will never show up on this page.
+				</div>
+			</div>
+			<div class='collapse' id='inprogress'>
+				<div class='card card-body question inprogress'>
+					This indicates that someone has commented or answered the question, but there is no accepted answer yet. This could be due to a follow up question being asked. Usually this also means that someone is taking care of the question.
+				</div>
+			</div>
+			<div class='collapse' id='untouched'>
+				<div class='card card-body question untouched'>
+					This indicates that the question has no comments or answers. It craves attention.
+				</div>
+			</div>
+		</p>
+
+		<h2>Last Response From Users</h2>
+		<div class='card-deck'>
+			{% for question in user_questions %}
+				<div class='card question border-{{question.status}}'>
+					<div class='card-header font-weight-bold text-truncate bg-{{question.status}}'>{{question.title}}</div>
+					<div class='card-body bg-transparent'>
+						<div class='font-weight-bold'>Author:</div>
+						<div class='ml-3'>{{question.author}}</div>
+						<div>{{question.body|safe}}</div>
+
+					</div>
+					<div class='card-footer font-italic border-{{question.status}}'>
+						<div class='float-left'>{{question.time_label}}</div>
+						<button type='button' class='btn btn-sm btn-dark float-right' data-toggle='modal' data-target='#questionDetails' data-commid={{question.id}}>Quick View</button>
+						<a href="{{question.browser_url}}" class='btn btn-sm btn-dark float-right' target='_blank'> View </a>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+
+		<h2>Last Response From Clover</h2>
+			<div class='card-deck'>
+				{% for question in clover_questions %}
+					<div class='card question border-{{question.status}}'>
+						<div class='card-header font-weight-bold text-truncate bg-{{question.status}}'>{{question.title}}</div>
+						<div class='card-body bg-transparent'>
+							<div class='font-weight-bold'>Author:</div>
+							<div class='ml-3'>{{question.author}}</div>
+							<div>{{question.body|safe}}</div>
+
+						</div>
+						<div class='card-footer font-italic border-{{question.status}}'>
+							<div class='float-left'>{{question.time_label}}</div>
+							<button type='button' class='btn btn-sm btn-dark float-right' data-toggle='modal' data-target='#questionDetails' data-commid={{question.id}}>Quick View</button>
+							<a href="{{question.browser_url}}" class='btn btn-sm btn-dark float-right' target='_blank'> View </a>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+
+	</div>
+
+	<!-- Question Details Modal -->
+	<div class='modal fade' id='questionDetails' role='dialog' aria-hidden='true'>
+			<div class='modal-dialog' role='document'>
+				<div class='modal-content'>
+					<div class='modal-header'>
+						Under Construction
+					</div>
+
+					<div class='modal-body'>
+						<h6>This modal is still being tweaked. Please ignore.</h6>
+						<div class='btn-group-vertical btn-block'>
+
+							<button class='btn' type='button' data-toggle='collapse' data-target='#question-body' aria-expanded='false' aria-controls='question-body'>Post Body</button> 
+							<div class='collapse' id='question-body'>
+								<div class='card card-body d-block' id='question-body-content'>
+									Question content goes here
+								</div>
+							</div>
+
+							<button class='btn' type='button' data-toggle='collapse' data-target='#question-answers' aria-expanded='false' aria-controls='inprogress'>
+								Answers
+							</button> 
+							<div class='collapse' id='question-answers'>
+								<div class='card card-body d-block'>
+									Answers go here
+								</div>
+							</div>
+
+							<button class='btn' type='button' data-toggle='collapse' data-target='#users' aria-expanded='false' aria-controls='untouched'>
+								Users
+							</button> 
+							<div class='collapse' id='users'>
+								<div class='card card-body d-block'>
+									List of participating users (TBD)
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class='modal-footer'>
+						Still Under Construction
+					</div>
+				</div>
+			</div>
+	</div>
+</body>
+</html>
